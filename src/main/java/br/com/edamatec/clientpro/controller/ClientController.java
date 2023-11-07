@@ -24,7 +24,7 @@ public class ClientController {
         service.editConfigs(panel, id, table);
     }
     
-    public void deleteConfigs(JPanel panel){
-        
+    public void filterConfigs(JPanel panel, JTable table){
+        service.filterConfigs(panel, table);
     }
 }

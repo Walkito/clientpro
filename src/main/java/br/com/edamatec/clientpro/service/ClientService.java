@@ -1,9 +1,10 @@
 package br.com.edamatec.clientpro.service;
 
-import br.com.edamatec.clientpro.Utils;
+import br.com.edamatec.clientpro.utils.Utils;
 import br.com.edamatec.clientpro.model.dao.DAO;
 import br.com.edamatec.clientpro.model.entities.Client;
 import br.com.edamatec.clientpro.view.EditView;
+import br.com.edamatec.clientpro.view.FilterView;
 import br.com.edamatec.clientpro.view.RegisterView;
 import br.com.edamatec.clientpro.view.SearchView;
 import java.awt.BorderLayout;
@@ -14,9 +15,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -25,9 +30,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.MaskFormatter;
 
 public class ClientService {
     DAO<Client> dao = new DAO<>(Client.class);
@@ -41,25 +46,16 @@ public class ClientService {
         JLabel title = new JLabel("Atualizar Cliente");
         title.setFont(titleFont);
         panel.add(title, setConstraints(0, 0, 2, 1));
-        panel.add(createEditForm(id, table), setConstraints(1, 1, 2, 1));        
+        panel.add(createEditForm(id, table), setConstraints(1, 1, 2, 1));            
     }
-    
-    public void searchConfigs(JPanel panel){
+        
+    public void filterConfigs(JPanel panel, JTable table){
         setPanelColor(panel);
         
-        JLabel title = new JLabel("Buscar Clientes");
-        title.setFont(titleFont);
-        panel.add(title, setConstraints(0, 0, 7, 1));
-        panel.add(createClientList(panel), setConstraints(1 , 1, 5, 1));
-    }
-    
-    public void registerConfigs(JPanel panel){
-        setPanelColor(panel);
-        
-        JLabel title = new JLabel("Cadastrar Cliente");
+        JLabel title = new JLabel("Buscar Cliente");
         title.setFont(titleFont);
         panel.add(title, setConstraints(0, 0, 2, 1));
-        panel.add(createRegisterForm(), setConstraints(1, 1, 2, 1));
+        panel.add(createFilterForm(table), setConstraints(1, 1, 2, 1));    
     }
     
     public void initialConfigs(JPanel panel){
@@ -71,9 +67,26 @@ public class ClientService {
         title.setForeground(Color.RED);
         
         panel.add(title);
-
-        
     }
+    
+    public void registerConfigs(JPanel panel){
+        setPanelColor(panel);
+        
+        JLabel title = new JLabel("Cadastrar Cliente");
+        title.setFont(titleFont);
+        panel.add(title, setConstraints(0, 0, 2, 1));
+        panel.add(createRegisterForm(), setConstraints(1, 1, 2, 1));
+    }
+    
+    public void searchConfigs(JPanel panel){
+        setPanelColor(panel);
+        
+        JLabel title = new JLabel("Buscar Clientes");
+        title.setFont(titleFont);
+        panel.add(title, setConstraints(0, 0, 7, 1));
+        panel.add(createClientList(panel), setConstraints(1 , 1, 5, 1));
+    }
+    
     
     private JMenuBar createMenus(){
         JMenuBar menuBar = new JMenuBar();
@@ -143,6 +156,20 @@ public class ClientService {
         return formPanel;
     }
     
+    private JPanel createFilterForm(JTable table){
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        setPanelColor(formPanel);
+        
+        createFormLabels(formPanel);
+        
+        JButton btnBuscar = new JButton("Buscar");
+        filterClient(btnBuscar, createFormFields(formPanel), table);
+        
+        formPanel.add(btnBuscar, setConstraints(1, 13, 1, 1));
+        
+        return formPanel;
+    }
+    
     private JPanel createEditForm(Object id, JTable table){
         int y = 1;
         
@@ -151,9 +178,9 @@ public class ClientService {
         
         createFormLabels(formPanel);
         
-        List<JTextField> clientDatas = insertDataField(createFormFields(), id);
+        List<JFormattedTextField> clientDatas = insertDataField(createFormFields(), id);
         
-        for(JTextField field : clientDatas){
+        for(JFormattedTextField field : clientDatas){
             formPanel.add(field, setConstraints(0, y, 2, 1));
             y +=3;
         }
@@ -182,15 +209,35 @@ public class ClientService {
         }
     }
     
-    private List<JTextField> createFormFields(JPanel panel){
-        List<JTextField>  listFieldsForm = new ArrayList<>();
+    private List<MaskFormatter> createMasks(){
+        List<MaskFormatter> masks = new ArrayList<>();
+        try{
+            masks.add(new MaskFormatter("###.###.###-##"));
+            masks.add(new MaskFormatter("(##) #####-####"));
+        } catch (ParseException e){
+            e.printStackTrace();
+        }
+        return masks;
+    }
+    
+    private List<JFormattedTextField> createFormFields(JPanel panel){
+        List<MaskFormatter> masks = createMasks();
+        
+        List<JFormattedTextField>  listFieldsForm = new ArrayList<>();
         int y = 1;
        
        for(int i = 0; i < 4; i++){
-           listFieldsForm.add(new JTextField());
+           if(i == 1){
+                listFieldsForm.add(new JFormattedTextField(masks.get(0)));
+           } else if (i == 2) {
+               listFieldsForm.add(new JFormattedTextField(masks.get(1)));
+           } else {
+               listFieldsForm.add(new JFormattedTextField());
+           }
        } 
         
-       for(JTextField field: listFieldsForm){
+       for(JFormattedTextField field: listFieldsForm){
+           setEmptyTextField(field);
            field.setColumns(15);
            panel.add(field, setConstraints(0, y, 2, 1));
            y += 3;
@@ -199,14 +246,22 @@ public class ClientService {
        return listFieldsForm;
     }
     
-    private List<JTextField> createFormFields(){
-        List<JTextField>  listFieldsForm = new ArrayList<>();
+    private List<JFormattedTextField> createFormFields(){
+        List<MaskFormatter> masks = createMasks();
+        List<JFormattedTextField>  listFieldsForm = new ArrayList<>();
        
        for(int i = 0; i < 4; i++){
-           listFieldsForm.add(new JTextField());
+           if(i == 1){
+                listFieldsForm.add(new JFormattedTextField(masks.get(0)));
+           } else if (i == 2) {
+               listFieldsForm.add(new JFormattedTextField(masks.get(1)));
+           } else {
+               listFieldsForm.add(new JFormattedTextField());
+           }
        } 
         
-       for(JTextField field: listFieldsForm){
+       for(JFormattedTextField field: listFieldsForm){
+           setEmptyTextField(field);
            field.setColumns(15);
         }
        
@@ -232,16 +287,18 @@ public class ClientService {
     
     private void createButtonsSearch(JPanel panel, JTable table){
         List<JButton> listButtons = new ArrayList<>();
-        int x = 3;
+        int x = 1;
         
         listButtons.add(new JButton("Alterar"));
         listButtons.add(new JButton("Excluir"));
+        listButtons.add(new JButton("Filtrar"));
         
         openEditView(listButtons.get(0), table);
         deleteClient(listButtons.get(1) ,table);
+        openFilterView(listButtons.get(2), table);
         
         for(JButton button : listButtons){
-            panel.add(button, setConstraints(x, 2, 2, 1));
+            panel.add(button, setConstraints(x, 2, 1, 1));
             x += 1;
         }
     }
@@ -261,9 +318,30 @@ public class ClientService {
         return data;
     }
     
+    private Object[][] createDataObject(List<Client> filterClients){
+        Object[][] data = new Object[filterClients.size()][5];
+        
+        for(int i = 0; i < filterClients.size(); i ++){
+            Client client = filterClients.get(i);
+            data[i] = new Object[]{client.getId(), 
+                                                    client.getName(), 
+                                                    client.getCpf(), 
+                                                    client.getTelephone(), 
+                                                    client.getEmail()};
+        }
+        return data;
+    }
+    
     private DefaultTableModel updateClientTable(){
         String[] columnNames = {"Id", "Nome", "CPF", "Telefone", "E-mail"};
         Object [][] data = createDataObject();
+        
+        return new DefaultTableModel(data, columnNames);
+    }
+    
+    private DefaultTableModel updateClientTable(List<Client> filterClients){
+        String[] columnNames = {"Id", "Nome", "CPF", "Telefone", "E-mail"};
+        Object [][] data = createDataObject(filterClients);
         
         return new DefaultTableModel(data, columnNames);
     }
@@ -278,7 +356,7 @@ public class ClientService {
         });
     }
     
-    private List<JTextField> insertDataField(List<JTextField> editFields, Object id){
+    private List<JFormattedTextField> insertDataField(List<JFormattedTextField> editFields, Object id){
         Client client = dao.getById(id);
         
         editFields.get(0).setText(client.getName());
@@ -287,6 +365,54 @@ public class ClientService {
         editFields.get(3).setText(client.getEmail());
         
         return editFields;
+    }
+    
+    private void openFilterView(JButton button, JTable table){
+        button.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new FilterView(table);
+            }
+        });
+    }
+    
+    private void setEmptyTextField(JFormattedTextField textField){
+        textField.addFocusListener(new FocusListener(){
+            @Override
+            public void focusGained(FocusEvent e) {
+
+            }
+            
+            @Override
+            public void focusLost(FocusEvent e) {
+                String value = textField.getText().replaceAll("[().\\s-]+", "");
+                if(value.isEmpty()) {
+                    textField.setValue(null);
+                }
+            }
+            
+        });
+    }
+    
+    
+    private void filterClient(JButton button, List<JFormattedTextField> listFields, JTable table){
+        button.addActionListener(new  ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            String cpfValue = listFields.get(1).getText().replaceAll("[.()\\s-]+", "");
+            String  telephoneValue = listFields.get(2).getText().replaceAll("[.()\\s-]+", "");
+            
+                List<Client> filterClients = dao.searchByFilters(
+                                                                                                    listFields.get(0).getText(),
+                                                                                                    cpfValue,
+                                                                                                    telephoneValue,
+                                                                                                    listFields.get(3).getText()
+                );
+                table.setModel(updateClientTable(filterClients));
+                table.revalidate();
+                table.repaint();
+            }
+        });
     }
     
     private void deleteClient(JButton button, JTable table){
@@ -314,22 +440,25 @@ public class ClientService {
     });
     }
     
-    private void registerClient(JButton button, List<JTextField> listFields){        
+    private void registerClient(JButton button, List<JFormattedTextField> listFields){        
         button.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+           String cpfValue = listFields.get(1).getText().replaceAll("[.()\\s-]+", "");
+           String telephoneValue = listFields.get(2).getText().replaceAll("[.()\\s-]+", "");
+            
             Client client = new Client(listFields.get(0).getText(), 
-                                                   listFields.get(1).getText(),
-                                        listFields.get(2).getText(),
+                                                   cpfValue,
+                                        telephoneValue,
                                                 listFields.get(3).getText());
-            if(!Utils.validateCPF(listFields.get(1).getText())){
+            if(!Utils.validateCPF(cpfValue)){
                 JOptionPane.showMessageDialog(null,"CPF Inválido!");
             } else if (!Utils.validateEmail(listFields.get(3).getText())){
                 JOptionPane.showMessageDialog(null, "E-mail Inválido!");
             } else {
                 dao.includeAtomic(client);
                 JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
-                for(JTextField field : listFields){
+                for(JFormattedTextField field : listFields){
                     field.setText("");
                 }
             }
@@ -337,20 +466,23 @@ public class ClientService {
         });
     }
     
-    private void editClient(JButton button, List<JTextField> clientDatas, JTable table, Object id){
+    private void editClient(JButton button, List<JFormattedTextField> clientDatas, JTable table, Object id){
         button.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
                 int response = JOptionPane.showConfirmDialog(null,"Tem certeza que deseja atualizar o usuário selecionado?", "Confirmação",JOptionPane.YES_NO_OPTION);
                 
                 if(response == JOptionPane.YES_OPTION){
+                    String cpfValue = clientDatas.get(1).getText().replaceAll("[.()\\s-]+", "");;
+                    String telephoneValue = clientDatas.get(2).getText().replaceAll("[.()\\s-]+", "");;
+                    
                     Client client = dao.getById(id);
                     client.setName(clientDatas.get(0).getText());
-                    client.setCpf(clientDatas.get(1).getText());
-                    client.setTelephone(clientDatas.get(2).getText());
+                    client.setCpf(cpfValue);
+                    client.setTelephone(telephoneValue);
                     client.setEmail(clientDatas.get(3).getText());
                     
-                    if(!Utils.validateCPF(clientDatas.get(1).getText())){
+                    if(!Utils.validateCPF(cpfValue.toString())){
                         JOptionPane.showMessageDialog(null,"CPF Inválido!");
                     } else if (!Utils.validateEmail(clientDatas.get(3).getText())){
                         JOptionPane.showMessageDialog(null, "E-mail Inválido!");

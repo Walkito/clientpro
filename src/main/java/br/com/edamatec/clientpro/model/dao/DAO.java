@@ -1,14 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 package br.com.edamatec.clientpro.model.dao;
 
+import br.com.edamatec.clientpro.model.entities.Client;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DAO<E> {
@@ -80,5 +81,31 @@ public class DAO<E> {
     
    public E getById(Object id){
         return em.find(_class, id);
+   }
+
+   public List<Client> searchByFilters(String name, String cpf, String telephone, String email){
+       CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+       CriteriaQuery<Client> criteriaQuery = criteriaBuilder.createQuery(Client.class);
+       Root<Client> root = criteriaQuery.from(Client.class);
+       
+       List<Predicate> predicates = new ArrayList<>();
+       
+        if (name != null && !name.isEmpty()) {
+            predicates.add(criteriaBuilder.like(root.get("name"), "%" + name + "%"));
+        }
+        if (cpf != null && !cpf.isEmpty()) {
+            predicates.add(criteriaBuilder.equal(root.get("cpf"), cpf));
+        }
+        if (telephone != null && !telephone.isEmpty()) {
+            predicates.add(criteriaBuilder.equal(root.get("telephone"), telephone));
+        }
+        if (email != null && !email.isEmpty()) {
+            predicates.add(criteriaBuilder.equal(root.get("email"), email));
+        }
+        
+        criteriaQuery.where(predicates.toArray(new Predicate[0]));
+        
+        TypedQuery<Client> query = em.createQuery(criteriaQuery);
+        return query.getResultList();
    }
 }

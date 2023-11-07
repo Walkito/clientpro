@@ -6,16 +6,16 @@ import java.awt.GridBagLayout;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 
-public class EditView {
+public class FilterView {
     ClientController controller = new ClientController();
     
-    public EditView(Object id, JTable table){
-            DefaultFrame frame = new DefaultFrame("Atualizar Cliente", 2);
+    public FilterView(JTable table){
+            DefaultFrame frame = new DefaultFrame("Filtrar Cliente", 2);
             JPanel mainPanel = new JPanel(new GridBagLayout());
 
-            controller.editConfigs(mainPanel, id, table);
+            controller.filterConfigs(mainPanel, table);
 
             frame.add(mainPanel);
             frame.pack();        
-    }
+}
 }

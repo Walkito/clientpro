@@ -1,4 +1,4 @@
-package br.com.edamatec.clientpro;
+package br.com.edamatec.clientpro.utils;
 
 import br.com.caelum.stella.ValidationMessage;
 import br.com.caelum.stella.validation.CPFValidator;
