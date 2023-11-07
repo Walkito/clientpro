@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `clientes` (
 
 -- Copiando dados para a tabela client_pro.clientes: ~4 rows (aproximadamente)
 INSERT INTO `clientes` (`id`, `name`, `cpf`, `telephone`, `email`) VALUES
-	(4, 'Walker de Carvalho', '38438888844', '11961694049', 'walker_barueri@hotmail.com'),
+	(4, 'Walker de Carvalho', '38431234544', '11961692019', 'walker@hotmail.com'),
 	(10, 'Leandro Zanatta Muchiutti', '73445084009', '11969614940', 'leandro@hotmail.com'),
 	(11, 'Gabriella Martins', '98938379019', '11961694042', 'gabriella@outlook.com'),
 	(13, 'Enzo Freitas', '92690924021', '11961692535', 'enzo@outlook.com');
